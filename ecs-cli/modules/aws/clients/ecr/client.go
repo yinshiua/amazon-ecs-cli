@@ -30,6 +30,10 @@ import (
 //go:generate mockgen.sh github.com/awslabs/amazon-ecr-credential-helper/ecr-login/api Client mock/credential-helper/login_mock.go
 //go:generate mockgen.sh github.com/aws/aws-sdk-go/service/ecr/ecriface ECRAPI mock/sdk/ecriface_mock.go
 
+const (
+	CacheDir = "~/.ecs"
+)
+
 // Client ECR interface
 type Client interface {
 	GetAuthorizationToken(repositoryID string) (*Auth, error)
@@ -49,7 +53,11 @@ type ecrClient struct {
 func NewClient(params *config.CliParams) Client {
 	client := ecr.New(params.Session, params.Session.Config)
 	client.Handlers.Build.PushBackNamed(clients.CustomUserAgentHandler())
-	loginClient := login.DefaultClientFactory{}.NewClient(params.Session, params.Session.Config)
+	loginClient := login.DefaultClientFactory{}.NewClientWithOptions(login.Options{
+		Session:  params.Session,
+		Config:   params.Session.Config,
+		CacheDir: CacheDir,
+	})
 	return newClient(params, client, loginClient)
 }
 
