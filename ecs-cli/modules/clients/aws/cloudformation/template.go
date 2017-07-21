@@ -146,6 +146,11 @@ var template = `
       "Description": "Optional - Automatically assign public IP addresses to new instances in this VPC.",
       "Default": "true"
     },
+		"IAMRoleInstanceProfile": {
+			"Type": "String",
+			"Description": "Specifies the Name or the Amazon Resource Name (ARN) of the instance profile associated with the IAM role for the instance",
+			"Default": ""
+		},
     "EcsCluster" : {
       "Type" : "String",
       "Description" : "ECS Cluster Name",
@@ -383,21 +388,8 @@ var template = `
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
-          "Version": "2012-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                "Service": [
-                  "ec2.amazonaws.com"
-                ]
-              },
-              "Action": [
-                "sts:AssumeRole"
-              ]
-            }
-          ]
-        },
+					"Ref": "IamRoleInstanceProfile"
+				},
         "Path": "/",
         "ManagedPolicyArns": [
           "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"

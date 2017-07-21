@@ -35,6 +35,7 @@ const (
 	ParameterKeyCluster                  = "EcsCluster"
 	ParameterKeyAmiId                    = "EcsAmiId"
 	ParameterKeyAssociatePublicIPAddress = "AssociatePublicIpAddress"
+	ParameterIAMRoleInstanceProfile      = "IAMRoleInstanceProfile"
 )
 
 var ParameterNotFoundError = errors.New("Parameter not found")
@@ -69,6 +70,7 @@ func init() {
 		ParameterKeyCluster,
 		ParameterKeyAmiId,
 		ParameterKeyAssociatePublicIPAddress,
+		ParameterIAMRoleInstanceProfile,
 	}
 }
 

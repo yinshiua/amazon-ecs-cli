@@ -177,7 +177,7 @@ func createCluster(context *cli.Context, rdwr config.ReadWriter, ecsClient ecscl
 	}
 
 	// Populate cfn params
-	cfnParams := cliFlagsToCfnStackParams(context)
+	cfnParams := cliFlagsToCfnStackParams(context, *ecsParams.Session.Config.Region)
 	cfnParams.Add(cloudformation.ParameterKeyCluster, ecsParams.Cluster)
 	if context.Bool(command.NoAutoAssignPublicIPAddressFlag) {
 		cfnParams.Add(cloudformation.ParameterKeyAssociatePublicIPAddress, "false")
@@ -250,6 +250,7 @@ func createCluster(context *cli.Context, rdwr config.ReadWriter, ecsClient ecscl
 
 	// Create cfn stack
 	template := cloudformation.GetTemplate()
+	logrus.Info(template)
 	if _, err := cfnClient.CreateStack(template, stackName, cfnParams); err != nil {
 		return err
 	}
@@ -398,13 +399,20 @@ func deleteClusterPrompt(reader *bufio.Reader) error {
 }
 
 // cliFlagsToCfnStackParams converts values set for CLI flags to cloudformation stack parameters.
-func cliFlagsToCfnStackParams(context *cli.Context) *cloudformation.CfnStackParams {
+func cliFlagsToCfnStackParams(context *cli.Context, region string) *cloudformation.CfnStackParams {
 	cfnParams := cloudformation.NewCfnStackParams()
 	for cliFlag, cfnParamKeyName := range flagNamesToStackParameterKeys {
 		cfnParamKeyValue := context.String(cliFlag)
 		if cfnParamKeyValue != "" {
 			cfnParams.Add(cfnParamKeyName, cfnParamKeyValue)
 		}
+	}
+
+	switch region {
+	case "cn-north-1":
+		cfnParams.Add(cloudformation.ParameterIAMRoleInstanceProfile, cloudformation.GetCNPolicy())
+	default:
+		cfnParams.Add(cloudformation.ParameterIAMRoleInstanceProfile, cloudformation.GetPolicy())
 	}
 
 	return cfnParams
